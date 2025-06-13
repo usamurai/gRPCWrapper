@@ -1,0 +1,124 @@
+from concurrent import futures
+import grpc
+import time
+import rfcontrol_pb2_grpc
+import rfcontrol_pb2
+import argparse
+
+from mock_device import MockDevice
+try:
+    import uhd
+    uhd_driver = True
+except ImportError:
+    uhd_driver = False
+
+class RFControllerServicer(rfcontrol_pb2_grpc.RFControllerServicer):
+    def __init__(self):
+        self.devices = {}
+        try:
+            _devices = uhd.find_devices()
+            for device in _devices:
+                usrp = uhd.usrp.MultiUSRP(device)
+                device_id = usrp.get_mboard_name()
+                self.devices[device_id] = usrp
+                print(f"Found USRP device: {device_id}")
+        except Exception as e:
+            print("No hardware is connected or driver not installed, use 'mock' as device_id")
+
+        self.devices["mock"] = MockDevice()
+
+    def _get_device(self, device_id, context):
+        if device_id not in self.devices:
+            context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+            context.set_details("No hardware connected, please use 'mock' as device_id")
+            return None
+        return self.devices[device_id]
+
+    def setRFSettings(self, request, context):
+        print(f"Config: device_id={request.device_id}, frequency={request.frequency}, gain={request.gain}")
+
+        device = self._get_device(request.device_id, context)
+        if device is None:
+            return rfcontrol_pb2.RFResponse(success=False, message=context.details())
+
+        freq_s, freq_m = True, "Unchanged"
+        gain_s, gain_m = True, "Unchanged"
+
+        if request.frequency != -9999:
+            freq_s, freq_m = device.set_center_frequency(request.frequency)
+        if request.gain != -9999:
+            gain_s, gain_m = device.set_gain(request.gain)
+
+        if not (freq_s and gain_s):
+            return rfcontrol_pb2.RFResponse(success=False, message=f"Frequency: {freq_m}\nGain: {gain_m}")
+
+        return rfcontrol_pb2.RFResponse(success=True, message=f"Configs updated successfully\nFrequency: {freq_m}\nGain: {gain_m}")
+
+    def getDeviceStatus(self, request, context):
+        print(f"getDeviceStatus: device_id={request.device_id}")
+
+        device = self._get_device(request.device_id, context)
+        if device is None:
+            return rfcontrol_pb2.DeviceStatusResponse()
+
+        status = device.get_status()
+        return rfcontrol_pb2.DeviceStatusResponse(
+                device_id=status["device_id"],
+                frequency=status["frequency"],
+                gain=status["gain"],
+                ref_locked=status["ref_locked"],
+                lo_locked=status["lo_locked"],
+        )
+
+    def getPPString(self, request, context):
+        print(f"getPPString: device_id={request.device_id}")
+
+        device = self._get_device(request.device_id, context)
+        if device is None:
+            return rfcontrol_pb2.PPStringResponse(pp_string="")
+
+        pp_string = device.get_pp_string()
+        return rfcontrol_pb2.PPStringResponse(pp_string=pp_string)
+
+    def getGainRange(self, request, context):
+        print(f"getGainRange: device_id={request.device_id}")
+
+        device = self._get_device(request.device_id, context)
+        if device is None:
+            return rfcontrol_pb2.RangeResponse()
+
+        min_gain, max_gain = device.get_rx_gain_range()
+        return rfcontrol_pb2.RangeResponse(
+            min_value=min_gain,
+            max_value=max_gain,
+        )
+
+    def getFrequencyRange(self, request, context):
+        print(f"getFrequencyRange: device_id={request.device_id}")
+
+        device = self._get_device(request.device_id, context)
+        if device is None:
+            return rfcontrol_pb2.RangeResponse()
+
+        min_freq, max_freq = device.get_rx_freq_range()
+        return rfcontrol_pb2.RangeResponse(
+            min_value=min_freq,
+            max_value=max_freq,
+        )
+def serve(port=5555):
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=4))
+    rfcontrol_pb2_grpc.add_RFControllerServicer_to_server(RFControllerServicer(), server)
+    server.add_insecure_port(f'[::]:{port}')
+    server.start()
+    print(f"Server started on port {port}")
+    try:
+        while True:
+            time.sleep(86400)
+    except KeyboardInterrupt:
+        server.stop(0)
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='RF Control gRPC Server')
+    parser.add_argument('-p', '--port', type=int, default=5555, help='Port to run the gRPC server on')
+    args = parser.parse_args()
+    serve(port=args.port)

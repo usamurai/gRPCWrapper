@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package rfcontrol;
+
+service RFController {
+    rpc setRFSettings (RFRequest) returns (RFResponse);
+    rpc getDeviceStatus (DeviceRequest) returns (DeviceStatusResponse);
+    rpc getPPString (DeviceRequest) returns (PPStringResponse);
+    rpc getGainRange (DeviceRequest) returns (RangeResponse);
+    rpc getFrequencyRange (DeviceRequest) returns (RangeResponse);
+}
+
+message RFRequest {
+    string device_id = 1;
+    double frequency = 2;
+    double gain = 3;
+}
+
+message RFResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+message DeviceRequest {
+    string device_id = 1;
+}
+
+message DeviceStatusResponse {
+    string device_id = 1;
+    double frequency = 2;
+    double gain = 3;
+    bool ref_locked = 4;
+    bool lo_locked = 5;
+}
+
+message RangeResponse {
+    double min_value = 1;
+    double max_value = 2;
+}
+
+message PPStringResponse {
+    string pp_string = 1;
+}
