@@ -59,6 +59,26 @@ class RFControllerStub(object):
                 request_serializer=rfcontrol__pb2.DeviceRequest.SerializeToString,
                 response_deserializer=rfcontrol__pb2.RangeResponse.FromString,
                 _registered_method=True)
+        self.Greet = channel.unary_unary(
+                '/rfcontrol.RFController/Greet',
+                request_serializer=rfcontrol__pb2.GreetingRequest.SerializeToString,
+                response_deserializer=rfcontrol__pb2.GreetingResponse.FromString,
+                _registered_method=True)
+        self.Chat = channel.stream_stream(
+                '/rfcontrol.RFController/Chat',
+                request_serializer=rfcontrol__pb2.GreetingRequest.SerializeToString,
+                response_deserializer=rfcontrol__pb2.GreetingResponse.FromString,
+                _registered_method=True)
+        self.SendFFTCoefficients = channel.unary_unary(
+                '/rfcontrol.RFController/SendFFTCoefficients',
+                request_serializer=rfcontrol__pb2.FFTCoefficientsRequest.SerializeToString,
+                response_deserializer=rfcontrol__pb2.FFTCoefficientsResponse.FromString,
+                _registered_method=True)
+        self.StreamFFTCoefficients = channel.stream_stream(
+                '/rfcontrol.RFController/StreamFFTCoefficients',
+                request_serializer=rfcontrol__pb2.FFTCoefficientsStreamRequest.SerializeToString,
+                response_deserializer=rfcontrol__pb2.FFTCoefficientsStreamResponse.FromString,
+                _registered_method=True)
 
 
 class RFControllerServicer(object):
@@ -94,6 +114,30 @@ class RFControllerServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def Greet(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def Chat(self, request_iterator, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def SendFFTCoefficients(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def StreamFFTCoefficients(self, request_iterator, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_RFControllerServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -121,6 +165,26 @@ def add_RFControllerServicer_to_server(servicer, server):
                     servicer.getFrequencyRange,
                     request_deserializer=rfcontrol__pb2.DeviceRequest.FromString,
                     response_serializer=rfcontrol__pb2.RangeResponse.SerializeToString,
+            ),
+            'Greet': grpc.unary_unary_rpc_method_handler(
+                    servicer.Greet,
+                    request_deserializer=rfcontrol__pb2.GreetingRequest.FromString,
+                    response_serializer=rfcontrol__pb2.GreetingResponse.SerializeToString,
+            ),
+            'Chat': grpc.stream_stream_rpc_method_handler(
+                    servicer.Chat,
+                    request_deserializer=rfcontrol__pb2.GreetingRequest.FromString,
+                    response_serializer=rfcontrol__pb2.GreetingResponse.SerializeToString,
+            ),
+            'SendFFTCoefficients': grpc.unary_unary_rpc_method_handler(
+                    servicer.SendFFTCoefficients,
+                    request_deserializer=rfcontrol__pb2.FFTCoefficientsRequest.FromString,
+                    response_serializer=rfcontrol__pb2.FFTCoefficientsResponse.SerializeToString,
+            ),
+            'StreamFFTCoefficients': grpc.stream_stream_rpc_method_handler(
+                    servicer.StreamFFTCoefficients,
+                    request_deserializer=rfcontrol__pb2.FFTCoefficientsStreamRequest.FromString,
+                    response_serializer=rfcontrol__pb2.FFTCoefficientsStreamResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -258,6 +322,114 @@ class RFController(object):
             '/rfcontrol.RFController/getFrequencyRange',
             rfcontrol__pb2.DeviceRequest.SerializeToString,
             rfcontrol__pb2.RangeResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def Greet(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/rfcontrol.RFController/Greet',
+            rfcontrol__pb2.GreetingRequest.SerializeToString,
+            rfcontrol__pb2.GreetingResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def Chat(request_iterator,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.stream_stream(
+            request_iterator,
+            target,
+            '/rfcontrol.RFController/Chat',
+            rfcontrol__pb2.GreetingRequest.SerializeToString,
+            rfcontrol__pb2.GreetingResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def SendFFTCoefficients(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/rfcontrol.RFController/SendFFTCoefficients',
+            rfcontrol__pb2.FFTCoefficientsRequest.SerializeToString,
+            rfcontrol__pb2.FFTCoefficientsResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def StreamFFTCoefficients(request_iterator,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.stream_stream(
+            request_iterator,
+            target,
+            '/rfcontrol.RFController/StreamFFTCoefficients',
+            rfcontrol__pb2.FFTCoefficientsStreamRequest.SerializeToString,
+            rfcontrol__pb2.FFTCoefficientsStreamResponse.FromString,
             options,
             channel_credentials,
             insecure,

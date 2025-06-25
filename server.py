@@ -4,6 +4,8 @@ import time
 import rfcontrol_pb2_grpc
 import rfcontrol_pb2
 import argparse
+import sys
+##from greeter import Greeter
 
 from mock_device import MockDevice
 try:
@@ -92,7 +94,17 @@ class RFControllerServicer(rfcontrol_pb2_grpc.RFControllerServicer):
             min_value=min_gain,
             max_value=max_gain,
         )
+    
+    def Greet(self, request, context):
+        greeting='Hello %s!' % request.name
+        return rfcontrol_pb2.GreetingResponse(
+            geeting=greeting
+        )
 
+    def Chat(self, request_iterator , context):
+        for request in request_iterator:
+            yield rfcontrol_pb2.GreetingResponse(greeting=f"Welcome, {request.name}!")
+    
     def getFrequencyRange(self, request, context):
         print(f"getFrequencyRange: device_id={request.device_id}")
 
@@ -105,9 +117,48 @@ class RFControllerServicer(rfcontrol_pb2_grpc.RFControllerServicer):
             min_value=min_freq,
             max_value=max_freq,
         )
+    
+    def SendFFTCoefficients(self, request, context):
+        # Extract real and imaginary coefficients
+        real_coeffs = request.real
+        imag_coeffs = request.imag
+        
+        # Example: Print received coefficients
+        print(f"Received FFT coefficients: {len(real_coeffs)} real, {len(imag_coeffs)} imaginary")
+        
+        # Process coefficients as needed (e.g., store, analyze)
+        # For demo, just return a success status
+        return rfcontrol_pb2.FFTCoefficientsResponse(status="Success")
+    
+
+    def StreamFFTCoefficients(self, request_iterator, context):
+        """
+        Handle bidirectional streaming of FFT coefficients.
+        Receive chunks and send back status for each chunk.
+        """
+        for request in request_iterator:
+            chunk_id = request.chunk_id
+            real_coeffs = request.real
+            imag_coeffs = request.imag
+            is_last_chunk = request.is_last_chunk
+            
+            # Process chunk (e.g., store, analyze)
+            print(f"Received chunk {chunk_id}: {len(real_coeffs)} real, {len(imag_coeffs)} imag coefficients")
+            
+            # Send response for this chunk
+            status = f"Processed chunk {chunk_id}" + (" (last)" if is_last_chunk else "")
+            yield rfcontrol_pb2.FFTCoefficientsStreamResponse(
+                status=status,
+                chunk_id=chunk_id
+            )
+    
+    
 def serve(port=5555):
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=4))
     rfcontrol_pb2_grpc.add_RFControllerServicer_to_server(RFControllerServicer(), server)
+
+    ##rfcontrol_pb2_grpc.add_GreeterServicer_to_server(Greeter(), server)
+
     server.add_insecure_port(f'[::]:{port}')
     server.start()
     print(f"Server started on port {port}")

@@ -8,6 +8,33 @@ service RFController {
     rpc getPPString (DeviceRequest) returns (PPStringResponse);
     rpc getGainRange (DeviceRequest) returns (RangeResponse);
     rpc getFrequencyRange (DeviceRequest) returns (RangeResponse);
+
+    rpc Greet(GreetingRequest) returns (GreetingResponse );
+    rpc Chat(stream GreetingRequest) returns (stream GreetingResponse);
+
+    rpc SendFFTCoefficients (FFTCoefficientsRequest) returns (FFTCoefficientsResponse);
+    rpc StreamFFTCoefficients (stream FFTCoefficientsStreamRequest) returns (stream FFTCoefficientsStreamResponse);
+}
+
+message FFTCoefficientsRequest {
+  repeated double real = 1;
+  repeated double imag = 2;
+}
+
+message FFTCoefficientsResponse {
+  string status = 1;
+}
+
+message FFTCoefficientsStreamRequest {
+  repeated double real = 1;
+  repeated double imag = 2;
+  int32 chunk_id = 3;
+  bool is_last_chunk = 4;
+}
+
+message FFTCoefficientsStreamResponse {
+  string status = 1;
+  int32 chunk_id = 2;
 }
 
 message RFRequest {
@@ -40,4 +67,12 @@ message RangeResponse {
 
 message PPStringResponse {
     string pp_string = 1;
+}
+
+message GreetingRequest {
+    string name = 1;
+}
+
+message GreetingResponse {
+    string greeting = 1;
 }

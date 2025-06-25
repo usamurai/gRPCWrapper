@@ -24,25 +24,37 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0frfcontrol.proto\x12\trfcontrol\"?\n\tRFRequest\x12\x11\n\tdevice_id\x18\x01 \x01(\t\x12\x11\n\tfrequency\x18\x02 \x01(\x01\x12\x0c\n\x04gain\x18\x03 \x01(\x01\".\n\nRFResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t\"\"\n\rDeviceRequest\x12\x11\n\tdevice_id\x18\x01 \x01(\t\"q\n\x14\x44\x65viceStatusResponse\x12\x11\n\tdevice_id\x18\x01 \x01(\t\x12\x11\n\tfrequency\x18\x02 \x01(\x01\x12\x0c\n\x04gain\x18\x03 \x01(\x01\x12\x12\n\nref_locked\x18\x04 \x01(\x08\x12\x11\n\tlo_locked\x18\x05 \x01(\x08\"5\n\rRangeResponse\x12\x11\n\tmin_value\x18\x01 \x01(\x01\x12\x11\n\tmax_value\x18\x02 \x01(\x01\"%\n\x10PPStringResponse\x12\x11\n\tpp_string\x18\x01 \x01(\t2\xed\x02\n\x0cRFController\x12<\n\rsetRFSettings\x12\x14.rfcontrol.RFRequest\x1a\x15.rfcontrol.RFResponse\x12L\n\x0fgetDeviceStatus\x12\x18.rfcontrol.DeviceRequest\x1a\x1f.rfcontrol.DeviceStatusResponse\x12\x44\n\x0bgetPPString\x12\x18.rfcontrol.DeviceRequest\x1a\x1b.rfcontrol.PPStringResponse\x12\x42\n\x0cgetGainRange\x12\x18.rfcontrol.DeviceRequest\x1a\x18.rfcontrol.RangeResponse\x12G\n\x11getFrequencyRange\x12\x18.rfcontrol.DeviceRequest\x1a\x18.rfcontrol.RangeResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0frfcontrol.proto\x12\trfcontrol\"4\n\x16\x46\x46TCoefficientsRequest\x12\x0c\n\x04real\x18\x01 \x03(\x01\x12\x0c\n\x04imag\x18\x02 \x03(\x01\")\n\x17\x46\x46TCoefficientsResponse\x12\x0e\n\x06status\x18\x01 \x01(\t\"c\n\x1c\x46\x46TCoefficientsStreamRequest\x12\x0c\n\x04real\x18\x01 \x03(\x01\x12\x0c\n\x04imag\x18\x02 \x03(\x01\x12\x10\n\x08\x63hunk_id\x18\x03 \x01(\x05\x12\x15\n\ris_last_chunk\x18\x04 \x01(\x08\"A\n\x1d\x46\x46TCoefficientsStreamResponse\x12\x0e\n\x06status\x18\x01 \x01(\t\x12\x10\n\x08\x63hunk_id\x18\x02 \x01(\x05\"?\n\tRFRequest\x12\x11\n\tdevice_id\x18\x01 \x01(\t\x12\x11\n\tfrequency\x18\x02 \x01(\x01\x12\x0c\n\x04gain\x18\x03 \x01(\x01\".\n\nRFResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t\"\"\n\rDeviceRequest\x12\x11\n\tdevice_id\x18\x01 \x01(\t\"q\n\x14\x44\x65viceStatusResponse\x12\x11\n\tdevice_id\x18\x01 \x01(\t\x12\x11\n\tfrequency\x18\x02 \x01(\x01\x12\x0c\n\x04gain\x18\x03 \x01(\x01\x12\x12\n\nref_locked\x18\x04 \x01(\x08\x12\x11\n\tlo_locked\x18\x05 \x01(\x08\"5\n\rRangeResponse\x12\x11\n\tmin_value\x18\x01 \x01(\x01\x12\x11\n\tmax_value\x18\x02 \x01(\x01\"%\n\x10PPStringResponse\x12\x11\n\tpp_string\x18\x01 \x01(\t\"\x1f\n\x0fGreetingRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\"$\n\x10GreetingResponse\x12\x10\n\x08greeting\x18\x01 \x01(\t2\xc2\x05\n\x0cRFController\x12<\n\rsetRFSettings\x12\x14.rfcontrol.RFRequest\x1a\x15.rfcontrol.RFResponse\x12L\n\x0fgetDeviceStatus\x12\x18.rfcontrol.DeviceRequest\x1a\x1f.rfcontrol.DeviceStatusResponse\x12\x44\n\x0bgetPPString\x12\x18.rfcontrol.DeviceRequest\x1a\x1b.rfcontrol.PPStringResponse\x12\x42\n\x0cgetGainRange\x12\x18.rfcontrol.DeviceRequest\x1a\x18.rfcontrol.RangeResponse\x12G\n\x11getFrequencyRange\x12\x18.rfcontrol.DeviceRequest\x1a\x18.rfcontrol.RangeResponse\x12@\n\x05Greet\x12\x1a.rfcontrol.GreetingRequest\x1a\x1b.rfcontrol.GreetingResponse\x12\x43\n\x04\x43hat\x12\x1a.rfcontrol.GreetingRequest\x1a\x1b.rfcontrol.GreetingResponse(\x01\x30\x01\x12\\\n\x13SendFFTCoefficients\x12!.rfcontrol.FFTCoefficientsRequest\x1a\".rfcontrol.FFTCoefficientsResponse\x12n\n\x15StreamFFTCoefficients\x12\'.rfcontrol.FFTCoefficientsStreamRequest\x1a(.rfcontrol.FFTCoefficientsStreamResponse(\x01\x30\x01\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'rfcontrol_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
-  _globals['_RFREQUEST']._serialized_start=30
-  _globals['_RFREQUEST']._serialized_end=93
-  _globals['_RFRESPONSE']._serialized_start=95
-  _globals['_RFRESPONSE']._serialized_end=141
-  _globals['_DEVICEREQUEST']._serialized_start=143
-  _globals['_DEVICEREQUEST']._serialized_end=177
-  _globals['_DEVICESTATUSRESPONSE']._serialized_start=179
-  _globals['_DEVICESTATUSRESPONSE']._serialized_end=292
-  _globals['_RANGERESPONSE']._serialized_start=294
-  _globals['_RANGERESPONSE']._serialized_end=347
-  _globals['_PPSTRINGRESPONSE']._serialized_start=349
-  _globals['_PPSTRINGRESPONSE']._serialized_end=386
-  _globals['_RFCONTROLLER']._serialized_start=389
-  _globals['_RFCONTROLLER']._serialized_end=754
+  _globals['_FFTCOEFFICIENTSREQUEST']._serialized_start=30
+  _globals['_FFTCOEFFICIENTSREQUEST']._serialized_end=82
+  _globals['_FFTCOEFFICIENTSRESPONSE']._serialized_start=84
+  _globals['_FFTCOEFFICIENTSRESPONSE']._serialized_end=125
+  _globals['_FFTCOEFFICIENTSSTREAMREQUEST']._serialized_start=127
+  _globals['_FFTCOEFFICIENTSSTREAMREQUEST']._serialized_end=226
+  _globals['_FFTCOEFFICIENTSSTREAMRESPONSE']._serialized_start=228
+  _globals['_FFTCOEFFICIENTSSTREAMRESPONSE']._serialized_end=293
+  _globals['_RFREQUEST']._serialized_start=295
+  _globals['_RFREQUEST']._serialized_end=358
+  _globals['_RFRESPONSE']._serialized_start=360
+  _globals['_RFRESPONSE']._serialized_end=406
+  _globals['_DEVICEREQUEST']._serialized_start=408
+  _globals['_DEVICEREQUEST']._serialized_end=442
+  _globals['_DEVICESTATUSRESPONSE']._serialized_start=444
+  _globals['_DEVICESTATUSRESPONSE']._serialized_end=557
+  _globals['_RANGERESPONSE']._serialized_start=559
+  _globals['_RANGERESPONSE']._serialized_end=612
+  _globals['_PPSTRINGRESPONSE']._serialized_start=614
+  _globals['_PPSTRINGRESPONSE']._serialized_end=651
+  _globals['_GREETINGREQUEST']._serialized_start=653
+  _globals['_GREETINGREQUEST']._serialized_end=684
+  _globals['_GREETINGRESPONSE']._serialized_start=686
+  _globals['_GREETINGRESPONSE']._serialized_end=722
+  _globals['_RFCONTROLLER']._serialized_start=725
+  _globals['_RFCONTROLLER']._serialized_end=1431
 # @@protoc_insertion_point(module_scope)
