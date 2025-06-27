@@ -14,6 +14,16 @@ service RFController {
 
     rpc SendFFTCoefficients (FFTCoefficientsRequest) returns (FFTCoefficientsResponse);
     rpc StreamFFTCoefficients (stream FFTCoefficientsStreamRequest) returns (stream FFTCoefficientsStreamResponse);
+
+    // Bidirectional streaming RPC for sending and receiving large data
+    rpc TransferData (stream DataChunk) returns (stream DataChunk) {}
+}
+
+// Message to hold data chunks
+message DataChunk {
+  bytes data = 1;
+  int32 chunk_id = 2;
+  bool is_last = 3;
 }
 
 message FFTCoefficientsRequest {

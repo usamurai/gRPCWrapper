@@ -5,6 +5,8 @@ import rfcontrol_pb2_grpc
 import rfcontrol_pb2
 import argparse
 import sys
+import logging
+
 ##from greeter import Greeter
 
 from mock_device import MockDevice
@@ -152,6 +154,23 @@ class RFControllerServicer(rfcontrol_pb2_grpc.RFControllerServicer):
                 chunk_id=chunk_id
             )
     
+    def TransferData(self, request_iterator, context):
+        # Process incoming data chunks and send back processed chunks
+        chunk_count = 0
+        for chunk in request_iterator:
+            chunk_count += 1
+            # Simulate processing: just echo back with modified data
+            processed_data = chunk.data + b"_processed"
+            logging.info(f"{chunk.data} ==Chunk: {chunk_count}==  \n\n\n\n")
+            yield rfcontrol_pb2.DataChunk(
+                data=processed_data,
+                chunk_id=chunk.chunk_id,
+                is_last=chunk.is_last
+            )
+            if chunk.is_last:
+                logging.info(f"Processed {chunk_count} chunks")
+                break
+
     
 def serve(port=5555):
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=4))
@@ -162,6 +181,8 @@ def serve(port=5555):
     server.add_insecure_port(f'[::]:{port}')
     server.start()
     print(f"Server started on port {port}")
+    logging.basicConfig(level=logging.INFO)
+    logging.info(f"Server starting on port: {port}")
     try:
         while True:
             time.sleep(86400)

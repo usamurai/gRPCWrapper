@@ -6,6 +6,9 @@ import sys
 import argparse
 import numpy as np
 from fft_calculator import calculate_fft, chunk_fft_data
+import logging
+import time
+
 
 try:
     from tkinter import *
@@ -15,7 +18,11 @@ except ImportError:
     gui = False
     print("Tkinter is not available. Running in CLI mode.\nTo enable GUI, please install Tkinter.\n python -m pip install tk\n\n")
 
-method_options = ["setRFSettings", "getDeviceStatus", "getDevicePPString", "getGainRange", "getFrequencyRange", "Chat", "FFTCoefficients", "StreamFFTCoefficients"]
+method_options = ["setRFSettings", "getDeviceStatus", "getDevicePPString", "getGainRange", 
+                  "getFrequencyRange", "Chat", "FFTCoefficients", "StreamFFTCoefficients",
+                  "TransferData"
+                 ]
+
 class Client:
     def __init__(self, root, host='localhost', port=5555):
         self.root = root
@@ -48,6 +55,7 @@ class Client:
 
         self.update_form("setRFSettings")
 
+    ## Generate Sample Sine Wave Signal
     def generate_sample_signal(n_samples=2048, freq=20.0, sampling_rate=1500.0):
         """Generate a sample signal (e.g., sine wave)."""
         t = np.linspace(0, n_samples/sampling_rate, n_samples, endpoint=False)
@@ -74,6 +82,7 @@ class Client:
         except grpc.RpcError as e:
             print(f"Error sending FFT coefficients: {e}")
 
+    ## Generate Large Signal - Sine Waves
     def generate_large_signal(n_samples=100000, freq=10.0, sampling_rate=1000.0):
         """Generate a large sample signal (e.g., sine wave)."""
         t = np.linspace(0, n_samples/sampling_rate, n_samples, endpoint=False)
@@ -94,7 +103,7 @@ class Client:
         def make_requests():
             # Stream chunks of FFT coefficients
             for chunk_id, real_chunk, imag_chunk, is_last_chunk in chunk_fft_data(real_coeffs, imag_coeffs):
-                yield stub.FFTCoefficientsStreamRequest(
+                yield rfcontrol_pb2.FFTCoefficientsStreamRequest(
                     real=real_chunk.tolist(),
                     imag=imag_chunk.tolist(),
                     chunk_id=chunk_id,
@@ -104,13 +113,43 @@ class Client:
         # Send and receive streams
         try:
             responses = stub.StreamFFTCoefficients(make_requests())
-            print( f"{responses}" )
+            ##print( responses )
             for response in responses:
                 print(f"Server response for chunk {response.chunk_id}: {response.status}")
             #return responses
         except grpc.RpcError as e:
             print(f"Error streaming FFT coefficients: {e}")
 
+    
+    def generate_chunks(file_data, chunk_size=1024*1024):  # 1MB chunks
+        chunk_id = 0
+        for i in range(0, len(file_data), chunk_size):
+            chunk_id += 1
+            is_last = i + chunk_size >= len(file_data)
+            yield rfcontrol_pb2.DataChunk(
+                data=file_data[i:i + chunk_size],
+                chunk_id=chunk_id,
+                is_last=is_last
+            )
+
+    def transfer_data(stub, data):
+        # Send data chunks and receive processed chunks
+        logging.info("Starting data transfer...")
+        start_time = time.time()
+        logging.info(f"Start Time: {start_time} ")
+        # Send chunks to server and receive responses
+        responses = stub.TransferData(Client.generate_chunks(data))
+    
+        received_data = b""
+        for response in responses:
+            logging.info(f"Received chunk {response.chunk_id}")
+            received_data += response.data
+            if response.is_last:
+                break
+    
+        end_time = time.time()
+        logging.info(f"Transfer completed in {end_time - start_time:.2f} seconds")
+        return received_data
 
     def update_form(self, method):
         for widget in self.form_frame.winfo_children():
@@ -151,6 +190,7 @@ def parse_response(response):
         result_txt = f"{response.pp_string}"
     else:
         result_txt = str(response)
+        print(response)
 
     result_txt = f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}]\n{result_txt}\n"
     return result_txt
@@ -182,6 +222,13 @@ def send_grpc(stub, method, device_id, frequency_in, gain_in):
             ##response = stub.Chat(request)
         elif method == "StreamFFTCoefficients":
             response = Client.stream_fft_coefficients(stub)
+        elif method == "TransferData":
+            # Simulate large data (10MB)
+            large_data = b"ABC XYZ " * (10 * 1024 * 1024)
+            # Transfer data and get response
+            response = Client.transfer_data(stub, large_data)
+            logging.info(f"Received data size: {len(response)} bytes")
+            ##print(response)
 
         return response
 
@@ -262,4 +309,5 @@ def main():
         app.root.mainloop()
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
     main()
