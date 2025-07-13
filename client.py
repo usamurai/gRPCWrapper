@@ -9,7 +9,6 @@ from fft_calculator import calculate_fft, chunk_fft_data
 import logging
 import time
 
-
 try:
     from tkinter import *
     from tkinter import ttk
@@ -20,7 +19,13 @@ except ImportError:
 
 method_options = ["setRFSettings", "getDeviceStatus", "getDevicePPString", "getGainRange", 
                   "getFrequencyRange", "Chat", "FFTCoefficients", "StreamFFTCoefficients",
-                  "TransferData"
+                  "TransferData",
+                  " ------------------ ",
+                  "GetDeviceInformation",
+                  "GetRFDCCenterFrequency",
+                  "RFDCEnableStatus",
+                  "RFDCiBW",
+                  "GetTemps"
                  ]
 
 class Client:
@@ -204,6 +209,11 @@ def send_grpc(stub, method, device_id, frequency_in, gain_in):
         elif method == "getDeviceStatus":
             request = rfcontrol_pb2.DeviceRequest(device_id=device_id)
             response = stub.getDeviceStatus(request)
+        ### VISA Commands Starts ###
+        elif method == "GetDeviceInformation":
+            request = rfcontrol_pb2.DeviceInformationRequest(device_id=device_id,error_queue_populate=True)
+            response = stub.GetDeviceInformation(request)
+        ### VISA Commands Implentation Ends ###
         elif method == "getDevicePPString":
             request = rfcontrol_pb2.DeviceRequest(device_id=device_id)
             response = stub.getPPString(request)
@@ -231,11 +241,6 @@ def send_grpc(stub, method, device_id, frequency_in, gain_in):
             ##print(response)
 
         return response
-
-        ##greeter_stub = GreeterStub(intercept_channel)
-        ##request_data = GreetingRequest(name=name)
-        ##response = greeter_stub.Greet(request_data)
-        ##print(response.greeting)
 
 def Chat():
     ##with grpc.insecure_channel('localhost:50051') as channel:

@@ -7,9 +7,13 @@ import argparse
 import sys
 import logging
 
-##from greeter import Greeter
+## Enable grpc_invoke
+from grpc_invoke.grpc_client import GrpcClient
+from grpc_reflection.v1alpha import reflection
+from grpc_invoke import GrpcInvoker
 
 from mock_device import MockDevice
+from visa_wrapper import VisaWrapper
 try:
     import uhd
     uhd_driver = True
@@ -57,6 +61,24 @@ class RFControllerServicer(rfcontrol_pb2_grpc.RFControllerServicer):
             return rfcontrol_pb2.RFResponse(success=False, message=f"Frequency: {freq_m}\nGain: {gain_m}")
 
         return rfcontrol_pb2.RFResponse(success=True, message=f"Configs updated successfully\nFrequency: {freq_m}\nGain: {gain_m}")
+
+    ### VISA Commands Starts ###
+    def GetDeviceInformation(self, request, context):
+        visaWrp = VisaWrapper()
+        error_queue_populate = request.error_queue_populate
+        response = visaWrp.GetDeviceInformation()
+        commandName = request.device_id
+        #result = self.invoke_server_b(commandName,context)
+        result = self.callFlexSDR(commandName,context)
+        return rfcontrol_pb2.DeviceInformationResponse(
+                reply_information=response["reply_information"],
+                manufacturer=response["manufacturer"],
+                model=result, #response["model"],
+                serial_number=response["serial_number"],
+                firmware_revision=response["firmware_revision"]
+        )
+    
+    ### VISA Commands Ends ###
 
     def getDeviceStatus(self, request, context):
         print(f"getDeviceStatus: device_id={request.device_id}")
@@ -170,19 +192,63 @@ class RFControllerServicer(rfcontrol_pb2_grpc.RFControllerServicer):
             if chunk.is_last:
                 logging.info(f"Processed {chunk_count} chunks")
                 break
+    
+    # Function to invoke Server B's SayHello method
+    def invoke_server_b(self, name, context):
+        ##flexSDRGRPCServer = "192.168.137.232:5555"
+        flexSDRGRPCServer = "localhost:2222"
+        
+        with GrpcClient(flexSDRGRPCServer, "RFController", "rfcontrol.RFController.runCustomCmd") as client:
+            resp = client.invoke(data={"CustomRequest": "pwd"}, header={"auth": "testcall"})
+            print(resp)
+            exit()
+
+        ##with grpc.insecure_channel(flexSDRGRPCServer) as channel:
+        ##    stub = rfcontrol_pb2_grpc.RFControllerStub(channel)
+        ##    response = stub.runCustomCmd(rfcontrol_pb2.CustomRequest(name))
+        ##    print(f"RT Server requested to flex DR: {name}")
+        ##    print(f"RT Server received from Flex SDR: {response.message}")
+        ##    ##return response.message
+
+    # Function to invoke Server B's method
+    def callFlexSDR(self, name, context):
+        
+        ## Server's FQDN Need to take later from the Config file 
+        flexSDRGRPCServer = "192.168.137.232:5555"
+
+        # Initialize GrpcInvoker
+        invoker = GrpcInvoker(flexSDRGRPCServer)
+    
+        # Invoke runCustomCmd method
+        #request = rfcontrol_pb2.CustomRequest(customCmdName=device_id)
+        flexsdr_response = invoker.invoke(
+            service='rfcontrol.RFController',
+            method='runCustomCmd',
+            request={'customCmdName': 'pwd'}
+        )
+        print(f"Greet response: {flexsdr_response['message']}")
 
     
 def serve(port=5555):
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=4))
     rfcontrol_pb2_grpc.add_RFControllerServicer_to_server(RFControllerServicer(), server)
+ 
+    ## gRPC Server Reflection Start ##
+    ## Replace with your actual service name
+    SERVICE_NAMES = (
+        reflection.SERVICE_NAME,
+        rfcontrol_pb2.DESCRIPTOR.services_by_name['RFController'].full_name
+    )
 
-    ##rfcontrol_pb2_grpc.add_GreeterServicer_to_server(Greeter(), server)
+    reflection.enable_server_reflection(SERVICE_NAMES, server)
+    ## Refelction Done ##
 
     server.add_insecure_port(f'[::]:{port}')
     server.start()
     print(f"Server started on port {port}")
     logging.basicConfig(level=logging.INFO)
     logging.info(f"Server starting on port: {port}")
+
     try:
         while True:
             time.sleep(86400)

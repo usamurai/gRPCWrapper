@@ -9,7 +9,7 @@ service RFController {
     rpc getGainRange (DeviceRequest) returns (RangeResponse);
     rpc getFrequencyRange (DeviceRequest) returns (RangeResponse);
 
-    rpc Greet(GreetingRequest) returns (GreetingResponse );
+    rpc Greet(GreetingRequest) returns (GreetingResponse);
     rpc Chat(stream GreetingRequest) returns (stream GreetingResponse);
 
     rpc SendFFTCoefficients (FFTCoefficientsRequest) returns (FFTCoefficientsResponse);
@@ -17,7 +17,28 @@ service RFController {
 
     // Bidirectional streaming RPC for sending and receiving large data
     rpc TransferData (stream DataChunk) returns (stream DataChunk) {}
+
+    // VISA API Implementation //
+    rpc GetDeviceInformation (DeviceInformationRequest) returns (DeviceInformationResponse);
 }
+
+//VISA API Data Structs Start // 
+
+message DeviceInformationRequest {
+    string device_id = 1;
+    bool error_queue_populate = 2;
+}
+
+message DeviceInformationResponse {
+    string reply_information = 1;
+    string manufacturer  = 2;
+    string model = 3;
+    int32 serial_number = 4;
+    string firmware_revision = 5;
+}
+
+// VISA API Data Structs END //
+
 
 // Message to hold data chunks
 message DataChunk {
